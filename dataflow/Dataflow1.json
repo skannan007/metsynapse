@@ -1,0 +1,36 @@
+{
+	"name": "Dataflow1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "metar_xml_split",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "flatten1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          {collect:MeteorologicalBulletin} as ({@gml:id} as string, {@xmlns:collect} as string, {@xmlns:gml} as string, {@xmlns:xsi} as string, {@xsi:schemaLocation} as string, {collect:bulletinIdentifier} as string, {collect:meteorologicalInformation} as ({iwxxm:METAR} as ({@automatedStation} as boolean, {@gml:id} as string, {@permissibleUsage} as string, {@reportStatus} as string, {@translatedBulletinID} as string, {@translatedBulletinReceptionTime} as timestamp, {@translationCentreDesignator} as string, {@translationCentreName} as string, {@translationTime} as timestamp, {@xmlns:aixm} as string, {@xmlns:gml} as string, {@xmlns:iwxxm} as string, {@xmlns:xlink} as string, {@xmlns:xsi} as string, {@xsi:schemaLocation} as string, {iwxxm:aerodrome} as ({aixm:AirportHeliport} as ({@gml:id} as string, {aixm:timeSlice} as ({aixm:AirportHeliportTimeSlice} as ({@gml:id} as string, {aixm:ARP} as ({aixm:ElevatedPoint} as ({@gml:id} as string, {gml:pos} as string)), {aixm:designator} as string, {aixm:interpretation} as string, {aixm:locationIndicatorICAO} as string, {aixm:name} as string, {gml:validTime} as string)))), {iwxxm:issueTime} as ({gml:TimeInstant} as ({@gml:id} as string, {gml:timePosition} as timestamp)), {iwxxm:observation} as ({iwxxm:MeteorologicalAerodromeObservation} as ({@cloudAndVisibilityOK} as boolean, {@gml:id} as string, {iwxxm:airTemperature} as ({@uom} as string, {_value_} as double), {iwxxm:cloud} as ({iwxxm:AerodromeCloud} as ({iwxxm:layer} as ({iwxxm:CloudLayer} as ({iwxxm:amount} as ({@xlink:href} as string, {@xlink:title} as string), {iwxxm:base} as ({@uom} as string, {_value_} as short), {iwxxm:cloudType} as ({@nilReason} as string, {@xsi:nil} as boolean)))[])), {iwxxm:dewpointTemperature} as ({@uom} as string, {_value_} as double), {iwxxm:qnh} as ({@uom} as string, {_value_} as short), {iwxxm:surfaceWind} as ({iwxxm:AerodromeSurfaceWind} as ({@variableWindDirection} as boolean, {iwxxm:extremeClockwiseWindDirection} as ({@uom} as string, {_value_} as short), {iwxxm:extremeCounterClockwiseWindDirection} as ({@uom} as string, {_value_} as short), {iwxxm:meanWindDirection} as ({@uom} as string, {_value_} as short), {iwxxm:meanWindSpeed} as ({@uom} as string, {_value_} as double))), {iwxxm:visibility} as ({iwxxm:AerodromeHorizontalVisibility} as ({iwxxm:prevailingVisibility} as ({@uom} as string, {_value_} as short), {iwxxm:prevailingVisibilityOperator} as string)))), {iwxxm:observationTime} as ({gml:TimeInstant} as ({@gml:id} as string, {gml:timePosition} as timestamp))))[])",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     validationMode: 'none',",
+				"     namespaces: false) ~> source1",
+				"source1 foldDown(unroll({collect:MeteorologicalBulletin}.{collect:meteorologicalInformation}),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1"
+			]
+		}
+	}
+}

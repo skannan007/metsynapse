@@ -1,0 +1,19 @@
+{
+	"name": "metar_xml_split",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "met-syn-ws-WorkspaceDefaultStorage",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Xml",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "metar_xml_20240105213451.xml",
+				"folderPath": "metar",
+				"fileSystem": "silver"
+			}
+		}
+	}
+}
