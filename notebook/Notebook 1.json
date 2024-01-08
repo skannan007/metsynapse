@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "8977f272-f411-48e5-9ac7-76673ebbf475"
+				"spark.autotune.trackingId": "f7a73e51-6ad8-435c-a93f-254c92b269ba"
 			}
 		},
 		"metadata": {
@@ -469,6 +469,190 @@
 					""
 				],
 				"execution_count": 22
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col\r\n",
+					"import re\r\n",
+					"from datetime import datetime\r\n",
+					"\r\n",
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '/00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"df_logs = spark.read.text(f'wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/{file_path}')\r\n",
+					"\r\n",
+					"df_logs.show()\r\n",
+					"\r\n",
+					"# Read data from the text file\r\n",
+					"# data = df_logs.select(\"value\").collect()[0][0]\r\n",
+					"\r\n",
+					"\r\n",
+					""
+				],
+				"execution_count": 23
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '/00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"# Define the full path to the file\r\n",
+					"full_path = f'wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/{file_path}?spk={storage_account_key}'\r\n",
+					"\r\n",
+					"# Read the content of the file\r\n",
+					"file_content = dbutils.fs.head(full_path)\r\n",
+					"\r\n",
+					"# Print the file content\r\n",
+					"print(file_content)\r\n",
+					""
+				],
+				"execution_count": 24
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"!pip install azure-storage-blob"
+				],
+				"execution_count": 25
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient\r\n",
+					"\r\n",
+					"# Set up Azure Storage account credentials\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"# Create a BlobServiceClient\r\n",
+					"blob_service_client = BlobServiceClient(account_url=f'https://{storage_account_name}.blob.core.windows.net', credential=storage_account_key)\r\n",
+					"\r\n",
+					"# Create a BlobClient to the specific file\r\n",
+					"blob_client = blob_service_client.get_blob_client(container=container_name, blob=file_path)\r\n",
+					"\r\n",
+					"# Download the content of the file\r\n",
+					"file_content = blob_client.download_blob().readall()\r\n",
+					"\r\n",
+					"# Print the file content\r\n",
+					"print(file_content)\r\n",
+					""
+				],
+				"execution_count": 26
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient\r\n",
+					"\r\n",
+					"# Set up Azure Storage account credentials\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"# Create a BlobServiceClient\r\n",
+					"blob_service_client = BlobServiceClient(account_url=f'https://{storage_account_name}.blob.core.windows.net', credential=storage_account_key)\r\n",
+					"\r\n",
+					"# Create a BlobClient to the specific file\r\n",
+					"blob_client = blob_service_client.get_blob_client(container=container_name, blob=file_path)\r\n",
+					"\r\n",
+					"# Download the content of the file\r\n",
+					"file_content = blob_client.download_blob().readall()\r\n",
+					"\r\n",
+					"\r\n",
+					"# Using start and end markers for XML extraction\r\n",
+					"start_marker = r'<?xml version'\r\n",
+					"end_marker = r'</collect:MeteorologicalBulletin>'\r\n",
+					"\r\n",
+					"xml_match = re.search(f'({re.escape(start_marker)}.*?{re.escape(end_marker)})', file_content.decode('utf-8'), re.DOTALL)\r\n",
+					"if xml_match:\r\n",
+					"    xml_content = xml_match.group(1)\r\n",
+					"\r\n",
+					"    # Add a fixed timestamp to the file names\r\n",
+					"    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')\r\n",
+					"    xml_filename = f'metar_xml_{timestamp}.xml'\r\n",
+					"    other_filename = f'metar_other_{timestamp}.txt'\r\n",
+					"\r\n",
+					"    # Create metar_xml.xml file with timestamp and write XML content using blob_client\r\n",
+					"    blob_client_xml = blob_service_client.get_blob_client(container=container_name, blob=xml_filename)\r\n",
+					"    blob_client_xml.upload_blob(xml_content, overwrite=True)\r\n",
+					"\r\n",
+					"    # Create metar_other.txt file with timestamp and write remaining lines using blob_client\r\n",
+					"    remaining_data = file_content.decode('utf-8').replace(xml_content, '').strip()\r\n",
+					"    blob_client_other = blob_service_client.get_blob_client(container=container_name, blob=other_filename)\r\n",
+					"    blob_client_other.upload_blob(remaining_data, overwrite=True)\r\n",
+					"\r\n",
+					"    print(f\"Files created successfully: {xml_filename}, {other_filename}\")\r\n",
+					"else:\r\n",
+					"    print(\"No markers found.\")\r\n",
+					""
+				],
+				"execution_count": 32
 			}
 		]
 	}
