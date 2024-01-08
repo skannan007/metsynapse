@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b9598be8-a069-4986-8351-e2c32623f3ed"
+				"spark.autotune.trackingId": "8977f272-f411-48e5-9ac7-76673ebbf475"
 			}
 		},
 		"metadata": {
@@ -94,6 +94,250 @@
 				"execution_count": 5
 			},
 			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col\r\n",
+					"\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'silver'\r\n",
+					"folder_path = '/metar/csv/emp.csv'\r\n",
+					"\r\n",
+					"df_logs = spark.read.format('csv').option('header', True).option('inferSchema', True).load(f'wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/{folder_path}')\r\n",
+					"\r\n",
+					"df_logs.show()"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"spark.conf.set(\r\n",
+					"\"fs.azure.account.key.metlake.blob.core.windows.net\", \"BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ==\"\r\n",
+					")\r\n",
+					"\r\n",
+					"spark_df = spark.read.format('csv').option('header', True).load(\"wasbs://silver@metlake.blob.core.windows.net/metar/csv/emp.csv\")\r\n",
+					"print(spark_df.show())"
+				],
+				"execution_count": 7
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"source_full_storage_account_name = \"metlake.blob.core.windows.net\"\r\n",
+					"spark.conf.set(f\"spark.storage.synapse.{source_full_storage_account_name}.linkedServiceName\", \"AzureBlobStorage\")\r\n",
+					"sc._jsc.hadoopConfiguration().set(f\"fs.azure.account.oauth.provider.type.{source_full_storage_account_name}\", \"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedTokenProvider\")\r\n",
+					"\r\n",
+					"# Read XML data into a Spark DataFrame\r\n",
+					"df = spark.read.format(\"xml\").option(\"rowTag\", \"iwxxm:cloud\").load('abfss://silver@metlake.blob.core.windows.net/metar/xml/metar_xml_20240105213451.xml')\r\n",
+					"\r\n",
+					"# Show the DataFrame\r\n",
+					"df.show(truncate=False)\r\n",
+					""
+				],
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%pip install databricks:spark-xml_2.12:0.13.0"
+				],
+				"execution_count": 12
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"source_full_storage_account_name = \"metlake.blob.core.windows.net\"\r\n",
+					"spark.conf.set(f\"spark.storage.synapse.{source_full_storage_account_name}.linkedServiceName\", \"AzureBlobStorage\")\r\n",
+					"sc._jsc.hadoopConfiguration().set(f\"fs.azure.account.oauth.provider.type.{source_full_storage_account_name}\", \"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedTokenProvider\")\r\n",
+					"\r\n",
+					"# Read XML data into a Spark DataFrame\r\n",
+					"df = spark.read.format(\"com.databricks.spark.xml\").option(\"rowTag\", \"iwxxm:cloud\").load('abfss://silver@metlake.blob.core.windows.net/metar/xml/metar_xml_20240105213451.xml')\r\n",
+					"\r\n",
+					"# Show the DataFrame\r\n",
+					"df.show(truncate=False)\r\n",
+					""
+				],
+				"execution_count": null
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col\r\n",
+					"\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '/00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"df_logs = spark.read.text(f'wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/{file_path}')\r\n",
+					"\r\n",
+					"df_logs.show(truncate=False)\r\n",
+					""
+				],
+				"execution_count": 14
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col\r\n",
+					"import re\r\n",
+					"from datetime import datetime\r\n",
+					"\r\n",
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '/00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"df_logs = spark.read.text(f'wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/{file_path}')\r\n",
+					"\r\n",
+					"# Using start and end markers for XML extraction\r\n",
+					"start_marker = r'<?xml version'\r\n",
+					"end_marker = r'</collect:MeteorologicalBulletin>'\r\n",
+					"\r\n",
+					"# Read data from the text file\r\n",
+					"data = df_logs.select(\"value\").first()[0]\r\n",
+					"\r\n",
+					"# Search for XML content\r\n",
+					"xml_match = re.search(f'({re.escape(start_marker)}.*?{re.escape(end_marker)})', data, re.DOTALL)\r\n",
+					"\r\n",
+					"if xml_match:\r\n",
+					"    xml_content = xml_match.group(1)\r\n",
+					"\r\n",
+					"    # Add a fixed timestamp to the file names\r\n",
+					"    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')\r\n",
+					"    xml_filename = f'metar_xml_{timestamp}.xml'\r\n",
+					"    other_filename = f'metar_other_{timestamp}.txt'\r\n",
+					"\r\n",
+					"    # Create metar_xml.xml file with timestamp and write XML content\r\n",
+					"    with open(xml_filename, 'w', encoding='utf-8') as xml_file:\r\n",
+					"        xml_file.write(xml_content)\r\n",
+					"\r\n",
+					"    # Create metar_other.txt file with timestamp and write remaining lines\r\n",
+					"    remaining_data = data.replace(xml_content, '').strip()\r\n",
+					"    with open(other_filename, 'w', encoding='utf-8') as other_file:\r\n",
+					"        other_file.write(remaining_data)\r\n",
+					"\r\n",
+					"    print(f\"Files created successfully: {xml_filename}, {other_filename}\")\r\n",
+					"else:\r\n",
+					"    print(\"No markers found.\")\r\n",
+					""
+				],
+				"execution_count": 17
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col\r\n",
+					"import re\r\n",
+					"from datetime import datetime\r\n",
+					"\r\n",
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '/00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"df_logs = spark.read.text(f'wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/{file_path}')\r\n",
+					"\r\n",
+					"# Show the content of the DataFrame\r\n",
+					"df_logs.count()\r\n",
+					""
+				],
+				"execution_count": 21
+			},
+			{
 				"cell_type": "markdown",
 				"metadata": {
 					"nteract": {
@@ -105,6 +349,126 @@
 				"source": [
 					""
 				]
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col\r\n",
+					"import re\r\n",
+					"from datetime import datetime\r\n",
+					"\r\n",
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '/00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"df_logs = spark.read.text(f'wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/{file_path}')\r\n",
+					"\r\n",
+					"# Read data from the text file\r\n",
+					"data = df_logs.select(\"value\").collect()[0][0]\r\n",
+					"\r\n",
+					"# Using start and end markers for XML extraction\r\n",
+					"start_marker = r'<?xml version'\r\n",
+					"end_marker = r'</collect:MeteorologicalBulletin>'\r\n",
+					"\r\n",
+					"# Search for XML content\r\n",
+					"xml_match = re.search(f'({re.escape(start_marker)}.*?{re.escape(end_marker)})', data, re.DOTALL)\r\n",
+					"\r\n",
+					"if xml_match:\r\n",
+					"    xml_content = xml_match.group(1)\r\n",
+					"\r\n",
+					"    # Add a fixed timestamp to the file names\r\n",
+					"    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')\r\n",
+					"    xml_filename = f'metar_xml_{timestamp}.xml'\r\n",
+					"    other_filename = f'metar_other_{timestamp}.txt'\r\n",
+					"\r\n",
+					"    # Create metar_xml.xml file with timestamp and write XML content\r\n",
+					"    with open(xml_filename, 'w', encoding='utf-8') as xml_file:\r\n",
+					"        xml_file.write(xml_content)\r\n",
+					"\r\n",
+					"    # Create metar_other.txt file with timestamp and write remaining lines\r\n",
+					"    remaining_data = data.replace(xml_content, '').strip()\r\n",
+					"    with open(other_filename, 'w', encoding='utf-8') as other_file:\r\n",
+					"        other_file.write(remaining_data)\r\n",
+					"\r\n",
+					"    print(f\"Files created successfully: {xml_filename}, {other_filename}\")\r\n",
+					"else:\r\n",
+					"    print(\"No markers found.\")\r\n",
+					""
+				],
+				"execution_count": 19
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.functions import col\r\n",
+					"import re\r\n",
+					"from datetime import datetime\r\n",
+					"\r\n",
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"storage_account_key = 'BhMwlqtXR0ScokxzyLfNdV4GC5+3R1ZReSlkqVrLvpWg8HAzcW6QFJGARSXDTGn+I/asP3WiYWsg+AStSNtUuQ=='\r\n",
+					"container_name = 'bronze'\r\n",
+					"file_path = '/00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"df_logs = spark.read.text(f'wasbs://{container_name}@{storage_account_name}.blob.core.windows.net/{file_path}')\r\n",
+					"\r\n",
+					"# Read data from the text file\r\n",
+					"data = df_logs.select(\"value\").collect()[0][0]\r\n",
+					"\r\n",
+					"# Using start and end markers for XML extraction\r\n",
+					"start_marker = r'<?xml version=\"1.0\" encoding=\"UTF-8\"?>'\r\n",
+					"end_marker = r'</collect:MeteorologicalBulletin>'\r\n",
+					"\r\n",
+					"# Search for XML content\r\n",
+					"xml_match = re.search(f'({re.escape(start_marker)}.*?{re.escape(end_marker)})', data, re.DOTALL)\r\n",
+					"\r\n",
+					"if xml_match:\r\n",
+					"    xml_content = xml_match.group(1)\r\n",
+					"\r\n",
+					"    # Add a fixed timestamp to the file names\r\n",
+					"    timestamp = datetime.now().strftime('%Y%m%d%H%M%S')\r\n",
+					"    xml_filename = f'metar_xml_{timestamp}.xml'\r\n",
+					"    other_filename = f'metar_other_{timestamp}.txt'\r\n",
+					"\r\n",
+					"    # Create metar_xml.xml file with timestamp and write XML content\r\n",
+					"    with open(xml_filename, 'w', encoding='utf-8') as xml_file:\r\n",
+					"        xml_file.write(xml_content)\r\n",
+					"\r\n",
+					"    # Create metar_other.txt file with timestamp and write remaining lines\r\n",
+					"    remaining_data = data.replace(xml_content, '').strip()\r\n",
+					"    with open(other_filename, 'w', encoding='utf-8') as other_file:\r\n",
+					"        other_file.write(remaining_data)\r\n",
+					"\r\n",
+					"    print(f\"Files created successfully: {xml_filename}, {other_filename}\")\r\n",
+					"else:\r\n",
+					"    print(\"No markers found.\")\r\n",
+					""
+				],
+				"execution_count": 22
 			}
 		]
 	}
