@@ -1,0 +1,111 @@
+{
+	"name": "Notebook 1",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "DefaultPool",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "b9598be8-a069-4986-8351-e2c32623f3ed"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/9348a962-5249-429f-840f-9be9714e6dcb/resourceGroups/met-rg/providers/Microsoft.Synapse/workspaces/met-syn-ws/bigDataPools/DefaultPool",
+				"name": "DefaultPool",
+				"type": "Spark",
+				"endpoint": "https://met-syn-ws.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/DefaultPool",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 10,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"print(\"welcome\")"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.types import StructType, StructField, IntegerType, StringType\r\n",
+					"\r\n",
+					"# Set up linked service for Azure Blob Storage\r\n",
+					"source_full_storage_account_name = \"metlake.blob.core.windows.net\"\r\n",
+					"spark.conf.set(f\"spark.storage.synapse.{source_full_storage_account_name}.linkedServiceName\", \"met-syn-ws-WorkspaceDefaultStorage\")\r\n",
+					"sc._jsc.hadoopConfiguration().set(f\"fs.azure.account.oauth.provider.type.{source_full_storage_account_name}\", \"com.microsoft.azure.synapse.tokenlibrary.LinkedServiceBasedTokenProvider\")\r\n",
+					"\r\n",
+					"# Define the schema for the CSV file\r\n",
+					"csv_schema = StructType([\r\n",
+					"    StructField(\"id\", IntegerType(), True),\r\n",
+					"    StructField(\"age\", IntegerType(), True),\r\n",
+					"    StructField(\"name\", StringType(), True)\r\n",
+					"])\r\n",
+					"\r\n",
+					"# Read CSV data into a Spark DataFrame with the specified schema\r\n",
+					"df = spark.read.option(\"header\", \"true\").schema(csv_schema).csv('abfss://silver@metlake.blob.core.windows.net/metar/csv/emp.csv')\r\n",
+					"\r\n",
+					"# Show the DataFrame\r\n",
+					"df.show(truncate=False)\r\n",
+					""
+				],
+				"execution_count": 5
+			},
+			{
+				"cell_type": "markdown",
+				"metadata": {
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					""
+				]
+			}
+		]
+	}
+}
