@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "83c04aa7-1cf1-4790-bf86-b32a20702e38"
+				"spark.autotune.trackingId": "5fbde728-79c4-4129-bf86-d9e57372b111"
 			}
 		},
 		"metadata": {
@@ -70,7 +70,6 @@
 					"\r\n",
 					"# Read Source file\r\n",
 					"file_content = spark.sparkContext.binaryFiles(source_file).values().collect()[0]\r\n",
-					"spark.sparkContext.install_pypi_package(\"com.databricks.spark.xml\")\r\n",
 					"\r\n",
 					"# Find the indices of the start and end markers\r\n",
 					"start_index = file_content.find(start_marker)\r\n",
@@ -78,9 +77,98 @@
 					"\r\n",
 					"# Split the file content\r\n",
 					"xml_content = file_content[start_index:end_index]\r\n",
+					"\r\n",
+					"print(xml_content)"
+				],
+				"execution_count": 13
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%pip install com.databricks:spark-xml_2.12:0.12.0"
+				],
+				"execution_count": 9
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"%pip install spark-xml\r\n",
 					""
 				],
-				"execution_count": 8
+				"execution_count": 10
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"# Initialize Spark session\r\n",
+					"import xmltodict\r\n",
+					"# Set Parameters\r\n",
+					"storage_account_name = 'metlake'\r\n",
+					"source_container_name = 'bronze'\r\n",
+					"target_container_name = 'silver'\r\n",
+					"start_marker = b'<?xml version'\r\n",
+					"end_marker = b'</collect:MeteorologicalBulletin>'\r\n",
+					"filename = '00bf6f60-a02f-4184-ab56-f564f6b53e8d.bin'\r\n",
+					"\r\n",
+					"\r\n",
+					"\r\n",
+					"# Construct Source and Target file names\r\n",
+					"base_filename = filename.split('.')[0]\r\n",
+					"source_file = f\"abfss://{source_container_name}@{storage_account_name}.dfs.core.windows.net/{base_filename}.bin\"\r\n",
+					"target_file = f\"abfss://{target_container_name}@{storage_account_name}.dfs.core.windows.net/{base_filename}.xml\"\r\n",
+					"target_file_flattened = f\"abfss://{target_container_name}@{storage_account_name}.dfs.core.windows.net/{base_filename}_flattened.csv\"\r\n",
+					"\r\n",
+					"# Read Source file\r\n",
+					"file_content = spark.sparkContext.binaryFiles(source_file).values().collect()[0]\r\n",
+					"\r\n",
+					"# Find the indices of the start and end markers\r\n",
+					"start_index = file_content.find(start_marker)\r\n",
+					"end_index = file_content.find(end_marker) + len(end_marker)\r\n",
+					"\r\n",
+					"# Split the file content\r\n",
+					"xml_content = file_content[start_index:end_index]\r\n",
+					"\r\n",
+					"# Read XML data from the content string into a DataFrame\r\n",
+					"df = spark.read.format(\"com.databricks.spark.xml\").option(\"rowTag\", \"person\").load(xml_content)\r\n",
+					"\r\n",
+					"# Show the DataFrame schema and content\r\n",
+					"df.show()\r\n",
+					""
+				],
+				"execution_count": 14
 			}
 		]
 	}
