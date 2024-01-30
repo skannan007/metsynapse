@@ -17,7 +17,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "5fbde728-79c4-4129-bf86-d9e57372b111"
+				"spark.autotune.trackingId": "905380b2-6112-42fe-a100-cef86df45f6d"
 			}
 		},
 		"metadata": {
@@ -133,8 +133,6 @@
 					}
 				},
 				"source": [
-					"# Initialize Spark session\r\n",
-					"import xmltodict\r\n",
 					"# Set Parameters\r\n",
 					"storage_account_name = 'metlake'\r\n",
 					"source_container_name = 'bronze'\r\n",
@@ -162,13 +160,13 @@
 					"xml_content = file_content[start_index:end_index]\r\n",
 					"\r\n",
 					"# Read XML data from the content string into a DataFrame\r\n",
-					"df = spark.read.format(\"com.databricks.spark.xml\").option(\"rowTag\", \"person\").load(xml_content)\r\n",
+					"df = spark.read.format(\"spark.xml\").option(\"rowTag\", \"person\").load(xml_content)\r\n",
 					"\r\n",
 					"# Show the DataFrame schema and content\r\n",
 					"df.show()\r\n",
 					""
 				],
-				"execution_count": 14
+				"execution_count": 6
 			}
 		]
 	}
