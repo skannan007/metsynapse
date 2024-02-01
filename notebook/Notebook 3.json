@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "4052476f-6b11-4f10-8e64-a04ebad5b65d"
+				"spark.autotune.trackingId": "da4019ae-49bf-4a29-af7c-eb1871b40f00"
 			}
 		},
 		"metadata": {
@@ -160,9 +160,9 @@
 					"\r\n",
 					"    for x_path, alias_name in column_map.items():\r\n",
 					"        if(x_path in nested_columns_lst):\r\n",
-					"            output_select_list.append(col(x_path).alias(column_map[x_path]))\r\n",
+					"            output_select_list.append(col(x_path).alias(alias_name))\r\n",
 					"        else:\r\n",
-					"            output_select_list.append(lit('').alias(column_map[x_path]))\r\n",
+					"            output_select_list.append(lit('').alias(alias_name))\r\n",
 					"\r\n",
 					"    return output_select_list\r\n",
 					"\r\n",
@@ -174,7 +174,7 @@
 					"\r\n",
 					"df.select(ret_list).show(100,False)"
 				],
-				"execution_count": 26
+				"execution_count": 28
 			}
 		]
 	}
