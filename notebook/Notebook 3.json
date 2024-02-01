@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "c911c97a-9418-42b6-a8ec-71fcc6d71d15"
+				"spark.autotune.trackingId": "b25a5cae-4541-4f75-9632-9a9dcca37656"
 			}
 		},
 		"metadata": {
@@ -76,7 +76,7 @@
 					"        print(f\"{column}: {value}\")\r\n",
 					"        print(\"\\n\")"
 				],
-				"execution_count": 1
+				"execution_count": 4
 			},
 			{
 				"cell_type": "code",
@@ -95,6 +95,41 @@
 					"df.printSchema()"
 				],
 				"execution_count": 2
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"from pyspark.sql.types import StructType, StructField, ArrayType\r\n",
+					"\r\n",
+					"def get_nested_columns(schema, prefix=\"\", nested_columns=None):\r\n",
+					"    if nested_columns is None:\r\n",
+					"        nested_columns = []\r\n",
+					"\r\n",
+					"    for field in schema.fields:\r\n",
+					"        if isinstance(field.dataType, StructType):\r\n",
+					"            get_nested_columns(field.dataType, prefix + field.name + \".\", nested_columns)\r\n",
+					"        elif isinstance(field.dataType, ArrayType) and isinstance(field.dataType.elementType, StructType):\r\n",
+					"            get_nested_columns(field.dataType.elementType, prefix + field.name + \".\", nested_columns)\r\n",
+					"        else:\r\n",
+					"            nested_columns.append(prefix + field.name)\r\n",
+					"\r\n",
+					"    return nested_columns\r\n",
+					"\r\n",
+					"# Use the function with your DataFrame schema\r\n",
+					"nested_columns_list = get_nested_columns(df.schema)"
+				],
+				"execution_count": 3
 			}
 		]
 	}
