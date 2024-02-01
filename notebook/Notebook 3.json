@@ -18,7 +18,7 @@
 				"spark.dynamicAllocation.enabled": "false",
 				"spark.dynamicAllocation.minExecutors": "2",
 				"spark.dynamicAllocation.maxExecutors": "2",
-				"spark.autotune.trackingId": "b25a5cae-4541-4f75-9632-9a9dcca37656"
+				"spark.autotune.trackingId": "69cddb7e-f452-454d-bfb0-938bf58cbd76"
 			}
 		},
 		"metadata": {
@@ -127,9 +127,11 @@
 					"    return nested_columns\r\n",
 					"\r\n",
 					"# Use the function with your DataFrame schema\r\n",
-					"nested_columns_list = get_nested_columns(df.schema)"
+					"nested_columns_list = get_nested_columns(df.schema)\r\n",
+					"\r\n",
+					"nested_columns_list"
 				],
-				"execution_count": 3
+				"execution_count": 6
 			}
 		]
 	}
