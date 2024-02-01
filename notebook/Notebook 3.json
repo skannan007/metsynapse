@@ -1,0 +1,101 @@
+{
+	"name": "Notebook 3",
+	"properties": {
+		"nbformat": 4,
+		"nbformat_minor": 2,
+		"bigDataPool": {
+			"referenceName": "sparkpool2",
+			"type": "BigDataPoolReference"
+		},
+		"sessionProperties": {
+			"driverMemory": "28g",
+			"driverCores": 4,
+			"executorMemory": "28g",
+			"executorCores": 4,
+			"numExecutors": 2,
+			"runAsWorkspaceSystemIdentity": true,
+			"conf": {
+				"spark.dynamicAllocation.enabled": "false",
+				"spark.dynamicAllocation.minExecutors": "2",
+				"spark.dynamicAllocation.maxExecutors": "2",
+				"spark.autotune.trackingId": "c911c97a-9418-42b6-a8ec-71fcc6d71d15"
+			}
+		},
+		"metadata": {
+			"saveOutput": true,
+			"enableDebugMode": false,
+			"kernelspec": {
+				"name": "synapse_pyspark",
+				"display_name": "Synapse PySpark"
+			},
+			"language_info": {
+				"name": "python"
+			},
+			"a365ComputeOptions": {
+				"id": "/subscriptions/9348a962-5249-429f-840f-9be9714e6dcb/resourceGroups/met-rg/providers/Microsoft.Synapse/workspaces/met-syn-ws/bigDataPools/sparkpool2",
+				"name": "sparkpool2",
+				"type": "Spark",
+				"endpoint": "https://met-syn-ws.dev.azuresynapse.net/livyApi/versions/2019-11-01-preview/sparkPools/sparkpool2",
+				"auth": {
+					"type": "AAD",
+					"authResource": "https://dev.azuresynapse.net"
+				},
+				"sparkVersion": "3.3",
+				"nodeCount": 3,
+				"cores": 4,
+				"memory": 28,
+				"automaticScaleJobs": false
+			},
+			"sessionKeepAliveTimeout": 30
+		},
+		"cells": [
+			{
+				"cell_type": "code",
+				"source": [
+					"from pyspark.sql.types import StructType, StructField, StringType\r\n",
+					"from pyspark.sql import SparkSession\r\n",
+					"from pyspark.sql.functions import *\r\n",
+					"from pyspark.sql.types import *\r\n",
+					"from notebookutils import mssparkutils\r\n",
+					"file_name = f\"abfss://bronze@metlake.dfs.core.windows.net/23ac4c53-60ce-4a00-9425-eff1ce36a79b.xml\"\r\n",
+					"\r\n",
+					"# Read XML file using the defined schema\r\n",
+					"df = spark.read \\\r\n",
+					"    .format(\"com.databricks.spark.xml\") \\\r\n",
+					"    .option(\"rowTag\", \"collect:meteorologicalInformation\") \\\r\n",
+					"    .load(file_name)\r\n",
+					"\r\n",
+					"# Parsing required columns\r\n",
+					"result_df = df.select(\r\n",
+					"    col(\"iwxxm:METAR.iwxxm:aerodrome.aixm:AirportHeliport.aixm:timeSlice.aixm:AirportHeliportTimeSlice.aixm:designator\").alias(\"designator\")\r\n",
+					"    ,col(\"iwxxm:METAR.iwxxm:observationTime.gml:TimeInstant.gml:timePosition\").alias(\"observationTime\"))\r\n",
+					"\r\n",
+					"results = result_df.collect()\r\n",
+					"for row in results:\r\n",
+					"    for column, value in row.asDict().items():\r\n",
+					"        print(f\"{column}: {value}\")\r\n",
+					"        print(\"\\n\")"
+				],
+				"execution_count": 1
+			},
+			{
+				"cell_type": "code",
+				"metadata": {
+					"jupyter": {
+						"source_hidden": false,
+						"outputs_hidden": false
+					},
+					"nteract": {
+						"transient": {
+							"deleting": false
+						}
+					}
+				},
+				"source": [
+					"df.printSchema()"
+				],
+				"execution_count": 2
+			}
+		]
+	}
+}
